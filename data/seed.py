@@ -1,7 +1,8 @@
 import sqlite3
+import sys
 import os
-
-DB_PATH = os.path.join(os.path.dirname(__file__), 'shop.db')
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+from db import DATABASE as DB_PATH
 
 PRODUCTS = [
     ('Robe d\'ete florale', 'Robe legere avec motif floral parfaite pour les journees ensoleillees.', 4500, 'https://placehold.co/400x500/7c3aed/ffffff?text=Robe+Florale', 'robe'),

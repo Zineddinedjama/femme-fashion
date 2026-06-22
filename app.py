@@ -21,6 +21,9 @@ app.teardown_appcontext(close_db)
 
 with app.app_context():
     init_db()
+    if query_one("SELECT COUNT(*) as c FROM products")['c'] == 0:
+        from data.seed import seed
+        seed()
 
 CATEGORIES = ['robe', 'chemise', 'pantalon', 'jupe', 'accessoire', 'autre']
 
