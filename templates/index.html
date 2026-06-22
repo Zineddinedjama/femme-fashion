@@ -14,7 +14,7 @@
         <div class="product-card">
             <a href="{{ url_for('product_detail', product_id=product.id) }}">
                 <div class="product-card-img">
-                    <img src="{{ product.image_url or 'https://placehold.co/300x400?text=Femme+Fashion' }}" alt="{{ product.name }}">
+                    <img src="{{ product.image_url or 'https://placehold.co/300x400?text=Femme+Fashion' }}" alt="{{ product.name }}" loading="lazy">
                     {% if product.video_url %}<span class="video-badge">&#9654; Video</span>{% endif %}
                 </div>
                 <h3>{{ product.name }}</h3>

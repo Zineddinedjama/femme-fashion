@@ -1,7 +1,7 @@
 import os
 from functools import wraps
 from werkzeug.utils import secure_filename
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory
 
 from db import get_db, close_db, init_db, query, query_one, execute
 
@@ -14,6 +14,7 @@ app.config['ADMIN_PASSWORD'] = os.environ.get('ADMIN_PASSWORD', 'admin123')
 app.config['WHATSAPP_NUMBER'] = os.environ.get('WHATSAPP_NUMBER', '213XXXXXXXXX')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 86400
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

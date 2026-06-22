@@ -45,6 +45,13 @@ CREATE TABLE IF NOT EXISTS order_items (
     item_color TEXT DEFAULT '',
     FOREIGN KEY (order_id) REFERENCES orders(id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
+CREATE INDEX IF NOT EXISTS idx_products_created ON products(created_at);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
+CREATE INDEX IF NOT EXISTS idx_orders_phone ON orders(customer_phone);
+CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at);
+CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
 """
 
 def get_db():
@@ -53,6 +60,8 @@ def get_db():
         g.db.row_factory = sqlite3.Row
         g.db.execute("PRAGMA journal_mode=WAL")
         g.db.execute("PRAGMA foreign_keys=ON")
+        g.db.execute("PRAGMA synchronous=NORMAL")
+        g.db.execute("PRAGMA cache_size=-8000")
     return g.db
 
 def close_db(e=None):
