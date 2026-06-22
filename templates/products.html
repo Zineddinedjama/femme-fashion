@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Produits{% endblock %}
+{% block content %}
+<h1>Nos Produits</h1>
+
+<div class="filters">
+    <a href="{{ url_for('products') }}" class="filter-btn {% if not current_cat %}active{% endif %}">Tous</a>
+    {% for cat in categories %}
+    <a href="{{ url_for('products', category=cat) }}" class="filter-btn {% if current_cat == cat %}active{% endif %}">{{ cat|capitalize }}</a>
+    {% endfor %}
+</div>
+
+<div class="product-grid">
+    {% for product in products %}
+    <div class="product-card">
+        <a href="{{ url_for('product_detail', product_id=product.id) }}">
+            <div class="product-card-img">
+                <img src="{{ product.image_url or 'https://placehold.co/300x400?text=Femme+Fashion' }}" alt="{{ product.name }}">
+                {% if product.video_url %}<span class="video-badge">&#9654; Video</span>{% endif %}
+            </div>
+            <h3>{{ product.name }}</h3>
+            <p class="price">{{ "%.2f"|format(product.price) }} DA</p>
+        </a>
+        <form action="{{ url_for('cart_add') }}" method="post">
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="btn btn-sm">Ajouter au panier</button>
+        </form>
+    </div>
+    {% else %}
+    <p class="empty">Aucun produit trouv&eacute;.</p>
+    {% endfor %}
+</div>
+{% endblock %}

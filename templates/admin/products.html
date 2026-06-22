@@ -1,0 +1,31 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Produits{% endblock %}
+{% block content %}
+<div class="admin-header">
+    <h1>Gestion des produits</h1>
+    <a href="{{ url_for('admin_product_add') }}" class="btn">+ Ajouter</a>
+</div>
+<table class="admin-table">
+    <tr><th>ID</th><th>Image</th><th>Nom</th><th>Cat&eacute;gorie</th><th>Prix</th><th>Tailles</th><th>Couleurs</th><th>Video</th><th>Actions</th></tr>
+    {% for product in products %}
+    <tr>
+        <td>{{ product.id }}</td>
+        <td><img src="{{ product.image_url or 'https://placehold.co/50x50' }}" class="thumb"></td>
+        <td>{{ product.name }}</td>
+        <td>{{ product.category }}</td>
+        <td>{{ "%.2f"|format(product.price) }} DA</td>
+        <td>{{ product.sizes }}</td>
+        <td>{{ product.colors }}</td>
+        <td>{% if product.video_url %}<span class="video-badge" style="position:static;display:inline-block">&#9654;</span>{% endif %}</td>
+        <td class="actions">
+            <a href="{{ url_for('admin_product_edit', product_id=product.id) }}" class="btn btn-sm">Modifier</a>
+            <form action="{{ url_for('admin_product_delete', product_id=product.id) }}" method="post" style="display:inline">
+                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer ce produit ?')">Supprimer</button>
+            </form>
+        </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="9">Aucun produit. <a href="{{ url_for('admin_product_add') }}">Ajoutez-en un.</a></td></tr>
+    {% endfor %}
+</table>
+{% endblock %}

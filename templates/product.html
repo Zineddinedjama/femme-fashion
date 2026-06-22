@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block content %}
+<div class="product-detail">
+    <div class="product-image">
+        <img src="{{ product.image_url or 'https://placehold.co/500x600?text=Femme+Fashion' }}" alt="{{ product.name }}">
+    </div>
+    <div class="product-info">
+        <h1>{{ product.name }}</h1>
+        <p class="category">{{ product.category|capitalize }}</p>
+        <p class="price-lg">{{ "%.2f"|format(product.price) }} DA</p>
+
+        <form action="{{ url_for('cart_add') }}" method="post" class="commande-form">
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+
+            {% set sizes_list = product.sizes.split(',') if product.sizes else [] %}
+            {% set colors_list = product.colors.split(',') if product.colors else [] %}
+
+            {% if sizes_list %}
+            <div class="option-group">
+                <label for="size">Taille:</label>
+                <select name="size" id="size">
+                    {% for s in sizes_list %}
+                    <option value="{{ s.strip() }}">{{ s.strip() }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            {% if colors_list %}
+            <div class="option-group">
+                <label for="color">Couleur:</label>
+                <select name="color" id="color">
+                    {% for c in colors_list %}
+                    <option value="{{ c.strip() }}">{{ c.strip() }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <div class="option-group">
+                <label for="quantity">Qt&eacute;:</label>
+                <input type="number" name="quantity" id="quantity" value="1" min="1" max="99">
+            </div>
+            <button type="submit" class="btn btn-commande" name="redirect" value="checkout">Commander</button>
+        </form>
+
+        {% if cart_items %}
+        <div class="mini-cart">
+            <h3>Votre panier</h3>
+            {% for item in cart_items %}
+            <div class="mini-cart-item">
+                <span>{{ item.name }}{% if item.size %} ({{ item.size }}){% endif %}{% if item.color %} - {{ item.color }}{% endif %} x {{ item.qty }}</span>
+                <span>{{ "%.2f"|format(item.price * item.qty) }} DA</span>
+            </div>
+            {% endfor %}
+            <div class="mini-cart-total">
+                <strong>Total: {{ "%.2f"|format(cart_total) }} DA</strong>
+            </div>
+            <a href="{{ url_for('cart') }}" class="btn btn-sm">Voir le panier</a>
+        </div>
+        {% endif %}
+
+        <p class="description">{{ product.description }}</p>
+
+        {% if product.video_url %}
+        <div class="product-video">
+            <h3>Video du produit</h3>
+            <div class="video-embed">
+                {% if 'youtube' in product.video_url or 'youtu.be' in product.video_url %}
+                    {% set vid = product.video_url.split('v=')[1].split('&')[0] if 'v=' in product.video_url else product.video_url.split('/')[-1] %}
+                    <iframe src="https://www.youtube.com/embed/{{ vid }}" frameborder="0" allowfullscreen></iframe>
+                {% elif 'facebook' in product.video_url %}
+                    <iframe src="https://www.facebook.com/plugins/video.php?href={{ product.video_url }}" frameborder="0" allowfullscreen></iframe>
+                {% else %}
+                    <a href="{{ product.video_url }}" target="_blank" class="btn btn-outline">Voir la video</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <a href="https://wa.me/{{ whatsapp_number }}?text=Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9%20par%20{{ product.name | replace(' ', '%20') }}%20-%20{{ '%.0f'|format(product.price) }}%20DA" target="_blank" class="btn btn-whatsapp">
+            Contacter via WhatsApp
+        </a>
+        <a href="{{ url_for('products') }}" class="btn btn-outline">&larr; Retour aux produits</a>
+    </div>
+</div>
+{% endblock %}

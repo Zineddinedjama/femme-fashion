@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Commander{% endblock %}
+{% block content %}
+<h1>Finaliser la commande</h1>
+
+{% if items %}
+<div class="checkout-summary">
+    <h3>R&eacute;sum&eacute; de la commande</h3>
+    {% for item in items %}
+    <p>{{ item.name }} x {{ item.qty }} = {{ "%.2f"|format(item.price * item.qty) }} DA</p>
+    {% endfor %}
+    <p class="subtotal"><strong>Sous-total: {{ "%.2f"|format(subtotal) }} DA</strong></p>
+</div>
+{% endif %}
+
+<form action="{{ url_for('checkout_submit') }}" method="post" class="checkout-form">
+    <div class="form-group">
+        <label for="name">Nom &amp; Pr&eacute;nom *</label>
+        <input type="text" name="name" id="name" required placeholder="Mohamed Ali">
+    </div>
+    <div class="form-group">
+        <label for="phone">Num&eacute;ro de t&eacute;l&eacute;phone * (10 chiffres)</label>
+        <input type="tel" name="phone" id="phone" required pattern="[0-9]{10}" placeholder="0555123456" title="Entrez 10 chiffres (ex: 0555123456)">
+    </div>
+    <div class="form-group">
+        <label for="wilaya_id">Wilaya *</label>
+        <select name="wilaya_id" id="wilaya_id" required>
+            <option value="">-- Choisissez votre wilaya --</option>
+            {% for wid, wname, d_price, b_price in wilayas %}
+            <option value="{{ wid }}" data-domicile="{{ d_price }}" data-bureau="{{ b_price }}">{{ wname }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="commune">Commune *</label>
+        <input type="text" name="commune" id="commune" required placeholder="Ex: Hydra, Bir Mourad Rais...">
+    </div>
+    <div class="form-group">
+        <label>Type de livraison *</label>
+        <div class="delivery-options">
+            <label class="radio-label">
+                <input type="radio" name="delivery_type" value="domicile" checked onchange="updateDeliveryPrice()">
+                &Agrave; domicile
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="delivery_type" value="bureau" onchange="updateDeliveryPrice()">
+                Au bureau / Stop-Desk
+            </label>
+        </div>
+    </div>
+    <div class="form-group">
+        <p class="delivery-price-display"><strong>Frais de livraison: <span id="deliveryPrice">0</span> DA</strong></p>
+        <p class="delivery-total-display"><strong>Total (produits + livraison): <span id="totalWithDelivery">{{ "%.0f"|format(subtotal) }}</span> DA</strong></p>
+        <p class="delivery-info" id="deliveryInfo"></p>
+    </div>
+    <div class="form-group">
+        <label for="notes">Notes (optionnel)</label>
+        <textarea name="notes" id="notes" rows="2" placeholder="Instructions de livraison..."></textarea>
+    </div>
+    <button type="submit" class="btn">Confirmer la commande</button>
+</form>
+
+<script>
+const WILAYAS = [
+    {% for wid, wname, d_price, b_price in wilayas %}
+    {id: {{ wid }}, domicile: {{ d_price }}, bureau: {{ b_price }}},
+    {% endfor %}
+];
+const SUBTOTAL = {{ subtotal }};
+function updateDeliveryPrice() {
+    var wilayaSelect = document.getElementById('wilaya_id');
+    var deliveryType = document.querySelector('input[name="delivery_type"]:checked').value;
+    var wilayaId = parseInt(wilayaSelect.value);
+    var price = 0;
+    if (wilayaId) {
+        for (var i = 0; i < WILAYAS.length; i++) {
+            if (WILAYAS[i].id === wilayaId) {
+                price = WILAYAS[i][deliveryType];
+                break;
+            }
+        }
+    }
+    document.getElementById('deliveryPrice').textContent = price;
+    document.getElementById('totalWithDelivery').textContent = SUBTOTAL + price;
+    var info = document.getElementById('deliveryInfo');
+    if (price === 0 && wilayaId) {
+        info.textContent = 'Livraison gratuite pour cette commande !';
+        info.style.color = '#059669';
+    } else {
+        info.textContent = '';
+    }
+}
+document.getElementById('wilaya_id').addEventListener('change', updateDeliveryPrice);
+document.addEventListener('DOMContentLoaded', updateDeliveryPrice);
+</script>
+{% endblock %}

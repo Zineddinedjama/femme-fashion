@@ -1,0 +1,41 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Commandes{% endblock %}
+{% block content %}
+<h1>Gestion des commandes</h1>
+<div class="filters">
+    <a href="{{ url_for('admin_orders') }}" class="filter-btn {% if not current_status %}active{% endif %}">Toutes</a>
+    <a href="{{ url_for('admin_orders', status='pending') }}" class="filter-btn {% if current_status == 'pending' %}active{% endif %}">En attente</a>
+    <a href="{{ url_for('admin_orders', status='confirmed') }}" class="filter-btn {% if current_status == 'confirmed' %}active{% endif %}">Confirm&eacute;es</a>
+    <a href="{{ url_for('admin_orders', status='completed') }}" class="filter-btn {% if current_status == 'completed' %}active{% endif %}">Termin&eacute;es</a>
+    <a href="{{ url_for('admin_orders', status='cancelled') }}" class="filter-btn {% if current_status == 'cancelled' %}active{% endif %}">Annul&eacute;es</a>
+</div>
+<table class="admin-table">
+    <tr><th>#</th><th>Client</th><th>T&eacute;l&eacute;phone</th><th>Wilaya</th><th>Livraison</th><th>Frais</th><th>Total</th><th>Statut</th><th>Date</th><th>Action</th></tr>
+    {% for order in orders %}
+    <tr>
+        <td>{{ order.id }}</td>
+        <td>{{ order.customer_name }}</td>
+        <td>{{ order.customer_phone }}</td>
+        <td>{{ order.wilaya }}</td>
+        <td>{{ "Domicile" if order.delivery_type == "domicile" else "Bureau" }}</td>
+        <td>{{ "%.0f"|format(order.delivery_price) }} DA</td>
+        <td>{{ "%.2f"|format(order.total_amount) }} DA</td>
+        <td><span class="status {{ order.status }}">{{ order.status }}</span></td>
+        <td>{{ order.created_at[:10] }}</td>
+        <td>
+            <form action="{{ url_for('admin_order_status', order_id=order.id) }}" method="post">
+                <select name="status">
+                    <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>En attente</option>
+                    <option value="confirmed" {% if order.status == 'confirmed' %}selected{% endif %}>Confirm&eacute;e</option>
+                    <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Termin&eacute;e</option>
+                    <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Annul&eacute;e</option>
+                </select>
+                <button type="submit" class="btn btn-sm">Mettre &agrave; jour</button>
+            </form>
+        </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="10">Aucune commande.</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}

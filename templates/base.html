@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Femme Fashion - {% block title %}Accueil{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container header-inner">
+            <a href="{{ url_for('index') }}" class="logo">Femme Fashion</a>
+            <nav>
+                <a href="{{ url_for('index') }}">Accueil</a>
+                <a href="{{ url_for('products') }}">Produits</a>
+                <a href="{{ url_for('cart') }}" class="cart-link">Panier {% if cart_count > 0 %}<span class="cart-badge">{{ cart_count }}</span>{% endif %}</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Femme Fashion. Tous droits r&eacute;serv&eacute;s.</p>
+        </div>
+    </footer>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>

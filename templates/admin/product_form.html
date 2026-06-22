@@ -1,0 +1,51 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{% if product %}Modifier{% else %}Ajouter{% endif %} un produit{% endblock %}
+{% block content %}
+<h1>{% if product %}Modifier{% else %}Ajouter{% endif %} un produit</h1>
+<form action="" method="post" enctype="multipart/form-data" class="product-form">
+    <div class="form-group">
+        <label for="name">Nom du produit *</label>
+        <input type="text" name="name" id="name" value="{{ product.name if product else '' }}" required>
+    </div>
+    <div class="form-group">
+        <label for="category">Cat&eacute;gorie</label>
+        <select name="category" id="category">
+            {% for cat in categories %}
+            <option value="{{ cat }}" {% if product and product.category == cat %}selected{% endif %}>{{ cat|capitalize }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="price">Prix (DA) *</label>
+        <input type="number" name="price" id="price" step="0.01" value="{{ product.price if product else '' }}" required>
+    </div>
+    <div class="form-group">
+        <label for="description">Description</label>
+        <textarea name="description" id="description" rows="4">{{ product.description if product else '' }}</textarea>
+    </div>
+    <div class="form-group">
+        <label for="sizes">Tailles disponibles (s&eacute;par&eacute;es par des virgules)</label>
+        <input type="text" name="sizes" id="sizes" value="{{ product.sizes if product else '' }}" placeholder="S, M, L, XL">
+    </div>
+    <div class="form-group">
+        <label for="colors">Couleurs disponibles (s&eacute;par&eacute;es par des virgules)</label>
+        <input type="text" name="colors" id="colors" value="{{ product.colors if product else '' }}" placeholder="Rouge, Bleu, Noir, Blanc">
+    </div>
+    <div class="form-group">
+        <label for="image">Image du produit (depuis votre bureau)</label>
+        <input type="file" name="image" id="image" accept="image/*">
+        {% if product and product.image_url and not product.image_url.startswith('https://placehold.co') %}
+        <p class="file-info">Image actuelle: <a href="{{ product.image_url }}" target="_blank">{{ product.image_url.split('/')[-1] }}</a></p>
+        {% endif %}
+    </div>
+    <div class="form-group">
+        <label for="video_url">Video URL (optionnel - YouTube, Facebook, etc.)</label>
+        <input type="url" name="video_url" id="video_url" value="{{ product.video_url if product else '' }}" placeholder="https://www.youtube.com/watch?v=...">
+        {% if product and product.video_url %}
+        <p class="file-info"><a href="{{ product.video_url }}" target="_blank">Voir la video</a></p>
+        {% endif %}
+    </div>
+    <button type="submit" class="btn">{% if product %}Enregistrer{% else %}Ajouter{% endif %}</button>
+    <a href="{{ url_for('admin_products') }}" class="btn btn-outline">Annuler</a>
+</form>
+{% endblock %}
