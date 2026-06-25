@@ -39,9 +39,15 @@
             {% endif %}
 
             <div class="option-group">
-                <label for="quantity">Qt&eacute;:</label>
-                <input type="number" name="quantity" id="quantity" value="1" min="1" max="99">
+                <label>Qt&eacute;:</label>
+                <div class="produit-qty-controls">
+                    <button type="button" class="produit-qty-btn produit-qty-minus" id="qty-minus">-</button>
+                    <span class="produit-qty-display" id="qty-display">1</span>
+                    <button type="button" class="produit-qty-btn produit-qty-plus" id="qty-plus">+</button>
+                </div>
+                <input type="hidden" name="quantity" id="quantity" value="1">
             </div>
+            <div class="produit-total" id="produit-total">{{ "%.2f"|format(product.price) }} DA</div>
             <button type="submit" class="btn btn-commande" name="redirect" value="checkout">Commander</button>
         </form>
 

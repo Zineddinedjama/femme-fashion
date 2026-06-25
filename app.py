@@ -12,6 +12,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
 app.config['ADMIN_PASSWORD'] = os.environ.get('ADMIN_PASSWORD', 'admin123')
 app.config['WHATSAPP_NUMBER'] = os.environ.get('WHATSAPP_NUMBER', '213XXXXXXXXX')
+app.config['FB_PIXEL_ID'] = os.environ.get('FB_PIXEL_ID', 'VOTRE_ID_ICI')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 86400
@@ -77,7 +78,7 @@ def login_required(f):
 def inject_globals():
     cart = session.get('cart', {})
     count = sum(item['qty'] for item in cart.values())
-    return {'cart_count': count, 'wilayas': WILAYAS, 'whatsapp_number': app.config['WHATSAPP_NUMBER']}
+    return {'cart_count': count, 'wilayas': WILAYAS, 'whatsapp_number': app.config['WHATSAPP_NUMBER'], 'fb_pixel_id': app.config['FB_PIXEL_ID']}
 
 def cart_items_and_total():
     cart = session.get('cart', {})
@@ -332,7 +333,7 @@ def admin_orders():
 @login_required
 def admin_order_status(order_id):
     status = request.form.get('status', 'pending')
-    if status not in ('pending', 'confirmed', 'completed', 'cancelled'):
+    if status not in ('pending', 'confirmed', 'completed', 'cancelled', 'no_answer_1', 'no_answer_2', 'no_answer_3'):
         flash('Statut invalide.', 'error')
         return redirect(url_for('admin_orders'))
     execute("UPDATE orders SET status = ? WHERE id = ?", (status, order_id))

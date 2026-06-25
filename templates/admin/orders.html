@@ -6,20 +6,23 @@
     <a href="{{ url_for('admin_orders') }}" class="filter-btn {% if not current_status %}active{% endif %}">Toutes</a>
     <a href="{{ url_for('admin_orders', status='pending') }}" class="filter-btn {% if current_status == 'pending' %}active{% endif %}">En attente</a>
     <a href="{{ url_for('admin_orders', status='confirmed') }}" class="filter-btn {% if current_status == 'confirmed' %}active{% endif %}">Confirm&eacute;es</a>
-    <a href="{{ url_for('admin_orders', status='completed') }}" class="filter-btn {% if current_status == 'completed' %}active{% endif %}">Termin&eacute;es</a>
+    <a href="{{ url_for('admin_orders', status='completed') }}" class="filter-btn {% if current_status == 'completed' %}active{% endif %}">Livr&eacute;es</a>
     <a href="{{ url_for('admin_orders', status='cancelled') }}" class="filter-btn {% if current_status == 'cancelled' %}active{% endif %}">Annul&eacute;es</a>
+    <a href="{{ url_for('admin_orders', status='no_answer_1') }}" class="filter-btn {% if current_status == 'no_answer_1' %}active{% endif %}">Ne r&eacute;pond pas 1</a>
+    <a href="{{ url_for('admin_orders', status='no_answer_2') }}" class="filter-btn {% if current_status == 'no_answer_2' %}active{% endif %}">Ne r&eacute;pond pas 2</a>
+    <a href="{{ url_for('admin_orders', status='no_answer_3') }}" class="filter-btn {% if current_status == 'no_answer_3' %}active{% endif %}">Ne r&eacute;pond pas 3</a>
 </div>
 <table class="admin-table">
     <tr><th>#</th><th>Client</th><th>T&eacute;l&eacute;phone</th><th>Wilaya</th><th>Livraison</th><th>Frais</th><th>Total</th><th>Statut</th><th>Date</th><th>Action</th></tr>
     {% for order in orders %}
-    <tr>
+    <tr class="row-{{ order.status }}">
         <td>{{ order.id }}</td>
         <td>{{ order.customer_name }}</td>
         <td>{{ order.customer_phone }}</td>
         <td>{{ order.wilaya }}</td>
         <td>{{ "Domicile" if order.delivery_type == "domicile" else "Bureau" }}</td>
-        <td>{{ "%.0f"|format(order.delivery_price) }} DA</td>
-        <td>{{ "%.2f"|format(order.total_amount) }} DA</td>
+        <td>{{ "%.0f"|format(order.delivery_price or 0) }} DA</td>
+        <td>{{ "%.2f"|format(order.total_amount or 0) }} DA</td>
         <td><span class="status {{ order.status }}">{{ order.status }}</span></td>
         <td>{{ order.created_at[:10] }}</td>
         <td>
@@ -27,8 +30,11 @@
                 <select name="status">
                     <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>En attente</option>
                     <option value="confirmed" {% if order.status == 'confirmed' %}selected{% endif %}>Confirm&eacute;e</option>
-                    <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Termin&eacute;e</option>
+                    <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Livr&eacute;e</option>
                     <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Annul&eacute;e</option>
+                    <option value="no_answer_1" {% if order.status == 'no_answer_1' %}selected{% endif %}>Ne r&eacute;pond pas 1</option>
+                    <option value="no_answer_2" {% if order.status == 'no_answer_2' %}selected{% endif %}>Ne r&eacute;pond pas 2</option>
+                    <option value="no_answer_3" {% if order.status == 'no_answer_3' %}selected{% endif %}>Ne r&eacute;pond pas 3</option>
                 </select>
                 <button type="submit" class="btn btn-sm">Mettre &agrave; jour</button>
             </form>
