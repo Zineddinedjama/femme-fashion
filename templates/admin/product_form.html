@@ -36,12 +36,11 @@
         <label>Images du produit (depuis votre bureau)</label>
         <div id="image-inputs">
             <div class="image-input-row" style="display:flex;gap:8px;margin-bottom:6px;align-items:center">
-                <input type="file" name="images" accept="image/*" multiple onchange="previewImages(this)">
-                <button type="button" class="btn btn-sm btn-outline" onclick="addImageInput()" style="white-space:nowrap">+ Ajouter une photo</button>
+                <input type="file" name="images" accept="image/*" onchange="previewImages(this)">
             </div>
-            <small style="color:#666">Vous pouvez s&eacute;lectionner plusieurs photos &agrave; la fois (Ctrl+clic ou Shift+clic)</small>
         </div>
-        <small style="color:#666">Les images sont compress&eacute;es automatiquement (800x1000 max, qualit&eacute; optimale)</small>
+        <button type="button" class="btn btn-sm btn-outline" onclick="addImageInput()" style="margin-top:4px">+ Ajouter une autre photo</button>
+        <small style="display:block;color:#666;margin-top:4px">Les images sont compress&eacute;es automatiquement (800x1000 max, qualit&eacute; optimale)</small>
         <div id="file-previews" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
         {% if images %}
         <div class="image-gallery" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px">
@@ -71,7 +70,7 @@ function addImageInput() {
     var container = document.getElementById('image-inputs');
     var row = document.createElement('div');
     row.style.cssText = 'display:flex;gap:8px;margin-bottom:6px;align-items:center';
-    row.innerHTML = '<input type="file" name="images" accept="image/*" multiple onchange="previewImages(this)">' +
+    row.innerHTML = '<input type="file" name="images" accept="image/*" onchange="previewImages(this)">' +
         '<button type="button" class="btn btn-sm btn-outline" onclick="this.parentElement.remove()" style="white-space:nowrap">Supprimer</button>';
     container.appendChild(row);
 }
