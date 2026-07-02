@@ -10,5 +10,6 @@ build/
 *.egg-info/
 .DS_Store
 Thumbs.db
-
-.vercel
+*.db
+static/uploads/*
+!static/uploads/.gitkeep
