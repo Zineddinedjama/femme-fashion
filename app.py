@@ -17,7 +17,6 @@ app.config['WHATSAPP_NUMBER'] = os.environ.get('WHATSAPP_NUMBER', '213XXXXXXXXX'
 app.config['FB_PIXEL_ID'] = os.environ.get('FB_PIXEL_ID', 'VOTRE_ID_ICI')
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 86400
-app.jinja_env.globals.update(get_images=get_images, get_first_image=get_first_image)
 
 UPLOAD_OPTIONS = {
     'folder': 'fayzielegance',
@@ -41,12 +40,29 @@ def get_first_image(product):
 
 def upload_images(files):
     urls = []
-    for file in files:
-        if file and file.filename:
-            result = cloudinary.uploader.upload(file, **UPLOAD_OPTIONS)
-            urls.append(result['secure_url'])
+    for f in files:
+        if f and f.filename:
+            try:
+                result = cloudinary.uploader.upload(f, **UPLOAD_OPTIONS)
+                urls.append(result['secure_url'])
+            except Exception as e:
+                print(f"Upload error for {f.filename}: {e}")
     return urls
 
+def handle_images():
+    urls = []
+    for key in request.files:
+        if key in ('images', 'images[]'):
+            for f in request.files.getlist(key):
+                if f and f.filename:
+                    try:
+                        result = cloudinary.uploader.upload(f, **UPLOAD_OPTIONS)
+                        urls.append(result['secure_url'])
+                    except Exception as e:
+                        flash(f"Erreur upload {f.filename}: {e}", 'error')
+    return urls
+
+app.jinja_env.globals.update(get_images=get_images, get_first_image=get_first_image)
 app.teardown_appcontext(close_db)
 
 CATEGORIES = ['robe', 'chemise', 'pantalon', 'jupe', 'accessoire', 'autre']
@@ -297,7 +313,7 @@ def admin_product_add():
         if not name or not price:
             flash('Nom et prix sont obligatoires.', 'error')
             return render_template('admin/product_form.html', product=None, categories=CATEGORIES)
-        urls = upload_images(request.files.getlist('images'))
+        urls = handle_images()
         image_url = json.dumps(urls) if urls else ''
         execute(
             "INSERT INTO products (name, description, price, image_url, video_url, sizes, colors, category) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
@@ -326,7 +342,7 @@ def admin_product_edit(product_id):
             flash('Nom et prix sont obligatoires.', 'error')
             return render_template('admin/product_form.html', product=product, categories=CATEGORIES)
         current_urls = get_images(product)
-        new_urls = upload_images(request.files.getlist('images'))
+        new_urls = handle_images()
         keep = request.form.getlist('keep_images')
         urls = keep + new_urls
         image_url = json.dumps(urls) if urls else ''

@@ -33,9 +33,16 @@
     </div>
     {% set images = get_images(product) %}
     <div class="form-group">
-        <label for="images">Images du produit (s&eacute;lectionner plusieurs)</label>
-        <input type="file" name="images" id="images" accept="image/*" multiple>
+        <label>Images du produit (depuis votre bureau)</label>
+        <div id="image-inputs">
+            <div class="image-input-row" style="display:flex;gap:8px;margin-bottom:6px;align-items:center">
+                <input type="file" name="images" accept="image/*" multiple onchange="previewImages(this)">
+                <button type="button" class="btn btn-sm btn-outline" onclick="addImageInput()" style="white-space:nowrap">+ Ajouter une photo</button>
+            </div>
+            <small style="color:#666">Vous pouvez s&eacute;lectionner plusieurs photos &agrave; la fois (Ctrl+clic ou Shift+clic)</small>
+        </div>
         <small style="color:#666">Les images sont compress&eacute;es automatiquement (800x1000 max, qualit&eacute; optimale)</small>
+        <div id="file-previews" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
         {% if images %}
         <div class="image-gallery" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px">
             {% for url in images %}
@@ -59,4 +66,33 @@
     <button type="submit" class="btn">{% if product %}Enregistrer{% else %}Ajouter{% endif %}</button>
     <a href="{{ url_for('admin_products') }}" class="btn btn-outline">Annuler</a>
 </form>
+<script>
+function addImageInput() {
+    var container = document.getElementById('image-inputs');
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:8px;margin-bottom:6px;align-items:center';
+    row.innerHTML = '<input type="file" name="images" accept="image/*" multiple onchange="previewImages(this)">' +
+        '<button type="button" class="btn btn-sm btn-outline" onclick="this.parentElement.remove()" style="white-space:nowrap">Supprimer</button>';
+    container.appendChild(row);
+}
+
+function previewImages(input) {
+    var container = document.getElementById('file-previews');
+    if (input.files) {
+        for (var i = 0; i < input.files.length; i++) {
+            (function(file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var div = document.createElement('div');
+                    div.style.cssText = 'position:relative;width:90px';
+                    div.innerHTML = '<img src="' + e.target.result + '" style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #ddd">' +
+                        '<span style="position:absolute;bottom:2px;left:2px;right:2px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;padding:2px 4px;border-radius:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + file.name + '</span>';
+                    container.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            })(input.files[i]);
+        }
+    }
+}
+</script>
 {% endblock %}

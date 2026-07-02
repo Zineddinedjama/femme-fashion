@@ -15,8 +15,8 @@
     </div>
     <div class="product-info">
         <h1>{{ product.name }}</h1>
-        <p class="category">{{ product.category|capitalize }}</p>
         <p class="price-lg">{{ "%.2f"|format(product.price) }} DA</p>
+        <p class="description">{{ product.description }}</p>
 
         <form action="{{ url_for('cart_add') }}" method="post" class="commande-form">
             <input type="hidden" name="product_id" value="{{ product.id }}">
@@ -74,8 +74,6 @@
             <a href="{{ url_for('cart') }}" class="btn btn-sm">Voir le panier</a>
         </div>
         {% endif %}
-
-        <p class="description">{{ product.description }}</p>
 
         {% if product.video_url %}
         <div class="product-video">
