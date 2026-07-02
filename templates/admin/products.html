@@ -10,7 +10,7 @@
     {% for product in products %}
     <tr>
         <td>{{ product.id }}</td>
-        <td><img src="{{ product.image_url or 'https://placehold.co/50x50' }}" class="thumb"></td>
+        <td><img src="{{ get_first_image(product) or 'https://picsum.photos/seed/default/50/50' }}" class="thumb"></td>
         <td>{{ product.name }}</td>
         <td>{{ product.category }}</td>
         <td>{{ "%.2f"|format(product.price) }} DA</td>

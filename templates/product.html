@@ -1,9 +1,17 @@
 {% extends "base.html" %}
 {% block title %}{{ product.name }}{% endblock %}
 {% block content %}
+{% set images = get_images(product) %}
 <div class="product-detail">
     <div class="product-image">
-        <img src="{{ product.image_url or 'https://placehold.co/500x600?text=Femme+Fashion' }}" alt="{{ product.name }}">
+        <img src="{{ get_first_image(product) or 'https://picsum.photos/seed/default/500/600' }}" alt="{{ product.name }}" id="main-image" class="main-image">
+        {% if images|length > 1 %}
+        <div class="thumb-gallery" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            {% for url in images %}
+            <img src="{{ url }}" class="thumb-img" style="width:60px;height:60px;object-fit:cover;border-radius:4px;border:2px solid transparent;cursor:pointer" onclick="document.getElementById('main-image').src=this.src;document.querySelectorAll('.thumb-img').forEach(i=>i.style.borderColor='transparent');this.style.borderColor='#7c3aed'">
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
     <div class="product-info">
         <h1>{{ product.name }}</h1>

@@ -4,12 +4,11 @@ __pycache__/
 .env
 venv/
 .env.*
-*.db
 instance/
 dist/
 build/
 *.egg-info/
 .DS_Store
 Thumbs.db
-static/uploads/*
-!static/uploads/.gitkeep
+
+.vercel

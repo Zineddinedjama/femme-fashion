@@ -31,11 +31,22 @@
         <label for="colors">Couleurs disponibles (s&eacute;par&eacute;es par des virgules)</label>
         <input type="text" name="colors" id="colors" value="{{ product.colors if product else '' }}" placeholder="Rouge, Bleu, Noir, Blanc">
     </div>
+    {% set images = get_images(product) %}
     <div class="form-group">
-        <label for="image">Image du produit (depuis votre bureau)</label>
-        <input type="file" name="image" id="image" accept="image/*">
-        {% if product and product.image_url and not product.image_url.startswith('https://placehold.co') %}
-        <p class="file-info">Image actuelle: <a href="{{ product.image_url }}" target="_blank">{{ product.image_url.split('/')[-1] }}</a></p>
+        <label for="images">Images du produit (s&eacute;lectionner plusieurs)</label>
+        <input type="file" name="images" id="images" accept="image/*" multiple>
+        <small style="color:#666">Les images sont compress&eacute;es automatiquement (800x1000 max, qualit&eacute; optimale)</small>
+        {% if images %}
+        <div class="image-gallery" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px">
+            {% for url in images %}
+            <div class="image-item" style="position:relative;width:120px">
+                <img src="{{ url }}" style="width:120px;height:120px;object-fit:cover;border-radius:6px;border:1px solid #ddd">
+                <label style="display:block;text-align:center;font-size:12px;margin-top:4px">
+                    <input type="checkbox" name="keep_images" value="{{ url }}" checked> Garder
+                </label>
+            </div>
+            {% endfor %}
+        </div>
         {% endif %}
     </div>
     <div class="form-group">

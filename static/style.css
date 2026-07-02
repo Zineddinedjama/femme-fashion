@@ -168,6 +168,7 @@ footer { background: #be185d; border-top: 2px solid #c9a44a; text-align: center;
 .subtotal { font-size: 1.1rem; margin-top: 10px; padding-top: 10px; border-top: 1px solid #c9a44a; }
 
 @media (max-width: 768px) {
+    .thumb-gallery { justify-content: center; }
     .product-detail { grid-template-columns: 1fr; }
     .hero h1 { font-size: 1.8rem; }
     .header-inner { flex-direction: column; gap: 10px; }
