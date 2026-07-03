@@ -51,15 +51,13 @@ def upload_images(files):
 
 def handle_images():
     urls = []
-    for key in request.files:
-        if key in ('images', 'images[]'):
-            for f in request.files.getlist(key):
-                if f and f.filename:
-                    try:
-                        result = cloudinary.uploader.upload(f, **UPLOAD_OPTIONS)
-                        urls.append(result['secure_url'])
-                    except Exception as e:
-                        flash(f"Erreur upload {f.filename}: {e}", 'error')
+    for f in request.files.getlist('images'):
+        if f and f.filename:
+            try:
+                result = cloudinary.uploader.upload(f, **UPLOAD_OPTIONS)
+                urls.append(result['secure_url'])
+            except Exception as e:
+                flash(f"Erreur upload {f.filename}: {e}", 'error')
     return urls
 
 app.jinja_env.globals.update(get_images=get_images, get_first_image=get_first_image)
