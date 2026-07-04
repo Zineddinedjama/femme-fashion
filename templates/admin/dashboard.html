@@ -81,18 +81,18 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
-{% if views_by_day %}
-var jours = {{ views_by_day | map(attribute='jour') | list | tojson }};
-var vues = {{ views_by_day | map(attribute='vues') | list }};
-new Chart(document.getElementById('chartVisits'), {
-    type: 'line',
-    data: {
-        labels: jours.map(function(j) { return j.slice(5); }),
-        datasets: [{ label: 'Vues', data: vues, borderColor: '#be185d', backgroundColor: 'rgba(190,24,93,0.1)', fill: true, tension: 0.3 }]
-    },
-    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-});
-{% endif %}
+var jours = {{ views_by_day | tojson }};
+var vues = {{ views_by_day_counts | tojson }};
+if (jours.length) {
+    new Chart(document.getElementById('chartVisits'), {
+        type: 'line',
+        data: {
+            labels: jours.map(function(j) { return j.slice(5); }),
+            datasets: [{ label: 'Vues', data: vues, borderColor: '#be185d', backgroundColor: 'rgba(190,24,93,0.1)', fill: true, tension: 0.3 }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+}
 {% if top_products %}
 var noms = {{ top_products | map(attribute='name') | list | tojson }};
 var vuesP = {{ top_products | map(attribute='vues') | list }};

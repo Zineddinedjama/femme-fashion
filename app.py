@@ -162,9 +162,12 @@ def ensure_db():
             track_visit(path)
     except:
         pass
-    if query_one("SELECT COUNT(*) as c FROM products")['c'] == 0:
-        from data.seed import seed
-        seed()
+    try:
+        if query_one("SELECT COUNT(*) as c FROM products")['c'] == 0:
+            from data.seed import seed
+            seed()
+    except:
+        pass
 
 @app.route('/')
 def index():
@@ -336,30 +339,42 @@ def admin_logout():
 @app.route('/admin')
 @login_required
 def admin_dashboard():
-    total_products = query_one("SELECT COUNT(*) as c FROM products")['c']
-    total_orders = query_one("SELECT COUNT(*) as c FROM orders")['c']
-    pending_orders = query_one("SELECT COUNT(*) as c FROM orders WHERE status = 'pending'")['c']
-    recent_orders = [dict(r, created_at_str=str(r['created_at'])[:10]) for r in query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 5")]
-    total_visitors = query_one("SELECT COUNT(DISTINCT session_id) as c FROM page_views")['c']
-    total_views = query_one("SELECT COUNT(*) as c FROM page_views")['c']
-    views_today = query_one("SELECT COUNT(*) as c FROM page_views WHERE created_at >= CURRENT_DATE")['c']
-    visitors_today = query_one("SELECT COUNT(DISTINCT session_id) as c FROM page_views WHERE created_at >= CURRENT_DATE")['c']
-    abandoned_carts_count = query_one("SELECT COUNT(*) as c FROM abandoned_carts WHERE converted = 0")['c']
-    total_orders_count = total_orders
-    conversion_rate = round((total_orders_count / max(total_visitors, 1)) * 100, 1)
-    top_products = [dict(r) for r in query("""
-        SELECT p.name, COUNT(pv.id) as vues FROM page_views pv
-        JOIN products p ON p.id = pv.product_id
-        WHERE pv.product_id > 0 GROUP BY p.id, p.name
-        ORDER BY vues DESC LIMIT 5
-    """)]
-    views_by_day = query("""
-        SELECT DATE(created_at) as jour, COUNT(*) as vues
-        FROM page_views WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
-        GROUP BY DATE(created_at) ORDER BY jour
-    """)
-    views_by_day = [{'jour': str(r['jour']), 'vues': r['vues']} for r in views_by_day]
-    today_orders = query_one("SELECT COUNT(*) as c FROM orders WHERE DATE(created_at) = CURRENT_DATE")['c']
+    try:
+        total_products = query_one("SELECT COUNT(*) as c FROM products")['c']
+        total_orders = query_one("SELECT COUNT(*) as c FROM orders")['c']
+        pending_orders = query_one("SELECT COUNT(*) as c FROM orders WHERE status = 'pending'")['c']
+        raw_orders = query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 5")
+        recent_orders = []
+        for r in raw_orders:
+            d = dict(r)
+            d['created_at_str'] = str(r['created_at'])[:10] if r.get('created_at') else ''
+            recent_orders.append(d)
+        total_visitors = query_one("SELECT COUNT(DISTINCT session_id) as c FROM page_views")['c']
+        total_views = query_one("SELECT COUNT(*) as c FROM page_views")['c']
+        views_today = query_one("SELECT COUNT(*) as c FROM page_views WHERE created_at >= CURRENT_DATE")['c']
+        visitors_today = query_one("SELECT COUNT(DISTINCT session_id) as c FROM page_views WHERE created_at >= CURRENT_DATE")['c']
+        abandoned_carts_count = query_one("SELECT COUNT(*) as c FROM abandoned_carts WHERE converted = 0")['c']
+        conversion_rate = round((total_orders / max(total_visitors, 1)) * 100, 1)
+        raw_top = query("""
+            SELECT p.name, COUNT(pv.id) as vues FROM page_views pv
+            JOIN products p ON p.id = pv.product_id
+            WHERE pv.product_id > 0 GROUP BY p.id, p.name
+            ORDER BY vues DESC LIMIT 5
+        """)
+        top_products = [dict(r) for r in raw_top]
+        raw_days = query("""
+            SELECT DATE(created_at) as jour, COUNT(*) as vues
+            FROM page_views WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
+            GROUP BY DATE(created_at) ORDER BY jour
+        """)
+        views_by_day = [str(r['jour']) for r in raw_days]
+        views_by_day_counts = [r['vues'] for r in raw_days]
+        today_orders = query_one("SELECT COUNT(*) as c FROM orders WHERE DATE(created_at) = CURRENT_DATE")['c']
+    except:
+        total_products = total_orders = pending_orders = 0
+        total_visitors = total_views = views_today = visitors_today = 0
+        abandoned_carts_count = conversion_rate = today_orders = 0
+        recent_orders = top_products = views_by_day = views_by_day_counts = []
     return render_template('admin/dashboard.html',
         total_products=total_products, total_orders=total_orders,
         pending_orders=pending_orders, recent_orders=recent_orders,
@@ -368,7 +383,7 @@ def admin_dashboard():
         abandoned_carts_count=abandoned_carts_count,
         conversion_rate=conversion_rate,
         top_products=top_products, views_by_day=views_by_day,
-        today_orders=today_orders)
+        views_by_day_counts=views_by_day_counts, today_orders=today_orders)
 
 @app.route('/admin/products')
 @login_required
