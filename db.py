@@ -113,13 +113,19 @@ def close_db(e=None):
         else:
             db.close()
 
+_db_inited = False
+
 def init_db():
+    global _db_inited
+    if _db_inited:
+        return
     conn = psycopg2.connect(DATABASE_URL)
     cur = conn.cursor()
     cur.execute(SCHEMA)
     conn.commit()
     cur.close()
     conn.close()
+    _db_inited = True
 
 def query(sql, params=()):
     db = get_db()

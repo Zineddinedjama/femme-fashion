@@ -148,15 +148,20 @@ def ensure_db():
     init_db()
     if not session.get('session_id'):
         session['session_id'] = hashlib.sha256(os.urandom(32)).hexdigest()[:24]
-    path = request.path
-    if '/product/' in path:
-        try:
-            pid = int(path.rsplit('/', 1)[-1])
-            track_visit(path, pid)
-        except:
+    try:
+        path = request.path
+        if path.startswith('/static') or path.startswith('/admin'):
+            pass
+        elif '/product/' in path:
+            try:
+                pid = int(path.rsplit('/', 1)[-1])
+                track_visit(path, pid)
+            except:
+                track_visit(path)
+        else:
             track_visit(path)
-    elif path not in ('/static/', '/admin', '/admin/'):
-        track_visit(path)
+    except:
+        pass
     if query_one("SELECT COUNT(*) as c FROM products")['c'] == 0:
         from data.seed import seed
         seed()
