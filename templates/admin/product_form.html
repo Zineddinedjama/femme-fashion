@@ -71,7 +71,7 @@ function addImageInput() {
     var row = document.createElement('div');
     row.style.cssText = 'display:flex;gap:8px;margin-bottom:6px;align-items:center';
     row.innerHTML = '<input type="file" name="images" accept="image/*" onchange="previewImages(this)">' +
-        '<button type="button" class="btn btn-sm btn-outline" onclick="this.parentElement.remove()" style="white-space:nowrap">Supprimer</button>';
+        '<button type="button" class="btn btn-sm btn-outline" onclick="this.parentElement.remove();this.closest(\'.image-input-row\').querySelector(\'input\').files.length=0;cleanupPreviews()" style="white-space:nowrap">Supprimer</button>';
     container.appendChild(row);
 }
 
@@ -80,18 +80,31 @@ function previewImages(input) {
     if (input.files) {
         for (var i = 0; i < input.files.length; i++) {
             (function(file) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    var div = document.createElement('div');
-                    div.style.cssText = 'position:relative;width:90px';
-                    div.innerHTML = '<img src="' + e.target.result + '" style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #ddd">' +
-                        '<span style="position:absolute;bottom:2px;left:2px;right:2px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;padding:2px 4px;border-radius:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + file.name + '</span>';
-                    container.appendChild(div);
+                var img = document.createElement('img');
+                var div = document.createElement('div');
+                div.style.cssText = 'position:relative;width:90px';
+                div.innerHTML = '<span style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;padding:1px 5px;border-radius:3px">' + (file.size / 1024).toFixed(0) + 'KB</span>';
+                container.appendChild(div);
+                var url = URL.createObjectURL(file);
+                img.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = 90; canvas.height = 90;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, 90, 90);
+                    div.innerHTML = '<img src="' + canvas.toDataURL('image/jpeg', 0.6) + '" style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #ddd">' +
+                        '<span style="position:absolute;bottom:2px;left:2px;right:2px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;padding:1px 4px;border-radius:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + file.name + '</span>';
+                    URL.revokeObjectURL(url);
                 };
-                reader.readAsDataURL(file);
+                img.src = url;
             })(input.files[i]);
         }
     }
 }
+
+document.querySelector('form').addEventListener('submit', function() {
+    var btn = this.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = 'Upload en cours...';
+});
 </script>
 {% endblock %}
