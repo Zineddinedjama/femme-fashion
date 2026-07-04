@@ -266,6 +266,20 @@ def checkout_submit():
     session.pop('cart', None)
     return redirect(url_for('order_confirmed', order_id=order_id))
 
+@app.route('/debug/product/<int:product_id>')
+def debug_product(product_id):
+    product = query_one("SELECT * FROM products WHERE id = %s", (product_id,))
+    if not product:
+        return {'error': 'not found'}
+    return {
+        'id': product['id'],
+        'name': product['name'],
+        'image_url_raw': product['image_url'],
+        'image_url_type': type(product['image_url']).__name__,
+        'get_images_result': get_images(product),
+        'get_first_image': get_first_image(product),
+    }
+
 @app.route('/order/<int:order_id>')
 def order_confirmed(order_id):
     order = query_one("SELECT * FROM orders WHERE id = %s", (order_id,))
