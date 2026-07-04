@@ -3,12 +3,18 @@
 {% block content %}
 {% set images = get_images(product) %}
 <div class="product-detail">
-    <div class="product-image">
-        <img src="{{ get_first_image(product) or 'https://picsum.photos/seed/default/500/600' }}" alt="{{ product.name }}" id="main-image" class="main-image">
+    <div class="product-image" style="position:relative">
+        <div class="main-image-wrapper" style="position:relative">
+            <img src="{{ get_first_image(product) or 'https://picsum.photos/seed/default/500/600' }}" alt="{{ product.name }}" id="main-image" class="main-image">
+            {% if images|length > 1 %}
+            <button type="button" class="img-arrow img-arrow-prev" onclick="changeImage(-1)" aria-label="Photo pr&eacute;c&eacute;dente">&#10094;</button>
+            <button type="button" class="img-arrow img-arrow-next" onclick="changeImage(1)" aria-label="Photo suivante">&#10095;</button>
+            {% endif %}
+        </div>
         {% if images|length > 1 %}
-        <div class="thumb-gallery" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <div class="thumb-gallery" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center">
             {% for url in images %}
-            <img src="{{ url }}" class="thumb-img" style="width:60px;height:60px;object-fit:cover;border-radius:4px;border:2px solid transparent;cursor:pointer" onclick="document.getElementById('main-image').src=this.src;document.querySelectorAll('.thumb-img').forEach(i=>i.style.borderColor='transparent');this.style.borderColor='#7c3aed'">
+            <img src="{{ url }}" class="thumb-img" style="width:60px;height:60px;object-fit:cover;border-radius:4px;border:2px solid transparent;cursor:pointer" onclick="selectImage({{ loop.index0 }})">
             {% endfor %}
         </div>
         {% endif %}
@@ -97,4 +103,24 @@
         <a href="{{ url_for('products') }}" class="btn btn-outline">&larr; Retour aux produits</a>
     </div>
 </div>
+<script>
+var productImages = {{ images | tojson }};
+var currentIndex = 0;
+
+function selectImage(idx) {
+    currentIndex = idx;
+    var img = document.getElementById('main-image');
+    img.src = productImages[idx];
+    document.querySelectorAll('.thumb-img').forEach(function(el, i) {
+        el.style.borderColor = i === idx ? '#7c3aed' : 'transparent';
+    });
+}
+
+function changeImage(direction) {
+    var idx = currentIndex + direction;
+    if (idx < 0) idx = productImages.length - 1;
+    if (idx >= productImages.length) idx = 0;
+    selectImage(idx);
+}
+</script>
 {% endblock %}
