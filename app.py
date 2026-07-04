@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 
@@ -30,13 +31,14 @@ def get_images(product):
         return []
     if isinstance(raw, list):
         return raw
-    raw = raw.strip()
-    if raw.startswith('['):
-        urls = []
-        for part in raw[1:-1].split(','):
-            part = part.strip().strip('"').strip("'")
-            if part and part.startswith('http'):
-                urls.append(part)
+    try:
+        parsed = json.loads(raw)
+        if isinstance(parsed, list):
+            return parsed
+    except (json.JSONDecodeError, TypeError):
+        pass
+    urls = re.findall(r'https?://[^\s,"\'\]\[]+', raw)
+    if urls:
         return urls
     return [raw]
 
