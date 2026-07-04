@@ -476,12 +476,13 @@ def abandoned_cart_save():
 @app.route('/admin/abandoned-carts')
 @login_required
 def admin_abandoned_carts():
-    carts = query("SELECT * FROM abandoned_carts ORDER BY updated_at DESC")
-    result = []
-    for c in carts:
+    rows = query("SELECT * FROM abandoned_carts ORDER BY updated_at DESC")
+    carts = []
+    for c in rows:
         items = json.loads(c['cart_data']) if isinstance(c['cart_data'], str) else c['cart_data']
-        result.append({**c, 'items': items})
-    return render_template('admin/abandoned_carts.html', carts=result)
+        total = sum((item.get('price', 0) or 0) * (item.get('quantity', 1) or 1) for item in items)
+        carts.append({**c, 'items': items, 'total_cart': total})
+    return render_template('admin/abandoned_carts.html', carts=carts)
 
 @app.route('/api/abandoned-cart/convert/<session_id>', methods=['POST'])
 def abandoned_cart_convert(session_id):

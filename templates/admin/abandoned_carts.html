@@ -22,15 +22,7 @@
                 {% endfor %}
             {% else %}—{% endif %}
         </td>
-        <td>
-            {% set total = {'sum': 0} %}
-            {% if c.items %}
-                {% for item in c.items %}
-                    {% set _ = total.update({'sum': total.sum + (item.price|float * item.quantity|int if item.quantity else item.price|float)}) %}
-                {% endfor %}
-            {% endif %}
-            {{ "%.2f"|format(total.sum) }} DA
-        </td>
+        <td>{{ "%.2f"|format(c.total_cart) }} DA</td>
         <td>{{ c.updated_at[:16] if c.updated_at else c.created_at[:16] }}</td>
         <td>
             {% if c.converted %}
