@@ -339,7 +339,7 @@ def admin_dashboard():
     total_products = query_one("SELECT COUNT(*) as c FROM products")['c']
     total_orders = query_one("SELECT COUNT(*) as c FROM orders")['c']
     pending_orders = query_one("SELECT COUNT(*) as c FROM orders WHERE status = 'pending'")['c']
-    recent_orders = query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 5")
+    recent_orders = [dict(r, created_at_str=str(r['created_at'])[:10]) for r in query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 5")]
     total_visitors = query_one("SELECT COUNT(DISTINCT session_id) as c FROM page_views")['c']
     total_views = query_one("SELECT COUNT(*) as c FROM page_views")['c']
     views_today = query_one("SELECT COUNT(*) as c FROM page_views WHERE created_at >= CURRENT_DATE")['c']
@@ -347,17 +347,18 @@ def admin_dashboard():
     abandoned_carts_count = query_one("SELECT COUNT(*) as c FROM abandoned_carts WHERE converted = 0")['c']
     total_orders_count = total_orders
     conversion_rate = round((total_orders_count / max(total_visitors, 1)) * 100, 1)
-    top_products = query("""
+    top_products = [dict(r) for r in query("""
         SELECT p.name, COUNT(pv.id) as vues FROM page_views pv
         JOIN products p ON p.id = pv.product_id
         WHERE pv.product_id > 0 GROUP BY p.id, p.name
         ORDER BY vues DESC LIMIT 5
-    """)
+    """)]
     views_by_day = query("""
         SELECT DATE(created_at) as jour, COUNT(*) as vues
         FROM page_views WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
         GROUP BY DATE(created_at) ORDER BY jour
     """)
+    views_by_day = [{'jour': str(r['jour']), 'vues': r['vues']} for r in views_by_day]
     today_orders = query_one("SELECT COUNT(*) as c FROM orders WHERE DATE(created_at) = CURRENT_DATE")['c']
     return render_template('admin/dashboard.html',
         total_products=total_products, total_orders=total_orders,
@@ -486,7 +487,13 @@ def admin_abandoned_carts():
     for c in rows:
         items = json.loads(c['cart_data']) if isinstance(c['cart_data'], str) else c['cart_data']
         total = sum((item.get('price', 0) or 0) * (item.get('quantity', 1) or 1) for item in items)
-        carts.append({**c, 'items': items, 'total_cart': total})
+        carts.append({
+            **c,
+            'items': items,
+            'total_cart': total,
+            'updated_at_str': str(c['updated_at'])[:16] if c.get('updated_at') else '',
+            'created_at_str': str(c['created_at'])[:16] if c.get('created_at') else '',
+        })
     return render_template('admin/abandoned_carts.html', carts=carts)
 
 @app.route('/api/abandoned-cart/convert/<session_id>', methods=['POST'])

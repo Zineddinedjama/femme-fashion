@@ -23,7 +23,7 @@
             {% else %}—{% endif %}
         </td>
         <td>{{ "%.2f"|format(c.total_cart) }} DA</td>
-        <td>{{ c.updated_at[:16] if c.updated_at else c.created_at[:16] }}</td>
+        <td>{{ c.updated_at_str or c.created_at_str }}</td>
         <td>
             {% if c.converted %}
                 <span style="color:#16a34a">Oui</span>
