@@ -73,10 +73,17 @@ h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin: 30px 0 1
 .product-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
 .product-image img { width: 100%; border-radius: 8px; border: 1px solid rgba(253,164,175,0.3); display:block; }
 .main-image-wrapper { position: relative; }
-.img-arrow { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:#fff; border:none; width:44px; height:44px; border-radius:50%; font-size:1.2rem; cursor:pointer; z-index:2; display:flex; align-items:center; justify-content:center; transition:background 0.2s; }
-.img-arrow:hover { background:rgba(0,0,0,0.75); }
-.img-arrow-prev { left:10px; }
-.img-arrow-next { right:10px; }
+.img-arrow { position:absolute; top:50%; transform:translateY(-50%) scale(0.85); background:rgba(255,255,255,0.15); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); color:#fff; border:none; width:48px; height:48px; border-radius:50%; font-size:1.1rem; cursor:pointer; z-index:2; display:flex; align-items:center; justify-content:center; transition:all 0.3s cubic-bezier(0.4,0,0.2,1); opacity:0; box-shadow:0 2px 12px rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.15); }
+.main-image-wrapper:hover .img-arrow { opacity:1; transform:translateY(-50%) scale(1); }
+.img-arrow:hover { background:rgba(255,255,255,0.35); border-color:rgba(255,255,255,0.4); transform:translateY(-50%) scale(1.1); }
+.img-arrow:active { transform:translateY(-50%) scale(0.95); }
+.img-arrow-prev { left:14px; padding-right:2px; }
+.img-arrow-next { right:14px; padding-left:2px; }
+@media (max-width:768px) {
+  .img-arrow { width:40px; height:40px; font-size:0.95rem; opacity:0.7; transform:translateY(-50%) scale(1); }
+  .img-arrow-prev { left:8px; }
+  .img-arrow-next { right:8px; }
+}
 .product-info h1 { font-size: 2rem; }
 .category { color: #888; text-transform: uppercase; font-size: 0.85rem; margin-bottom: 10px; }
 .price-lg { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #c9a44a; font-weight: 700; margin: 15px 0; }
