@@ -28,11 +28,16 @@ def get_images(product):
     raw = product.get('image_url') if product else ''
     if not raw:
         return []
-    try:
-        urls = json.loads(raw)
-        return urls if isinstance(urls, list) else [raw]
-    except (json.JSONDecodeError, TypeError):
-        return [raw]
+    if isinstance(raw, list):
+        return raw
+    raw = raw.strip()
+    if raw.startswith('[') and raw.endswith(']'):
+        try:
+            return json.loads(raw)
+        except (json.JSONDecodeError, TypeError):
+            import re
+            return re.findall(r'https?://[^\s,"\']+', raw)
+    return [raw]
 
 def get_first_image(product):
     images = get_images(product)
