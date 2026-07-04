@@ -48,6 +48,37 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (order_id) REFERENCES orders(id)
 );
 
+CREATE TABLE IF NOT EXISTS page_views (
+    id SERIAL PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    path TEXT NOT NULL,
+    product_id INTEGER DEFAULT 0,
+    ip_hash TEXT DEFAULT '',
+    user_agent TEXT DEFAULT '',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS abandoned_carts (
+    id SERIAL PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    customer_name TEXT DEFAULT '',
+    customer_phone TEXT DEFAULT '',
+    wilaya TEXT DEFAULT '',
+    wilaya_id INTEGER DEFAULT 0,
+    commune TEXT DEFAULT '',
+    delivery_type TEXT DEFAULT 'domicile',
+    notes TEXT DEFAULT '',
+    cart_data TEXT DEFAULT '[]',
+    converted INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_page_views_session ON page_views(session_id);
+CREATE INDEX IF NOT EXISTS idx_page_views_product ON page_views(product_id);
+CREATE INDEX IF NOT EXISTS idx_page_views_created ON page_views(created_at);
+CREATE INDEX IF NOT EXISTS idx_abandoned_carts_session ON abandoned_carts(session_id);
+CREATE INDEX IF NOT EXISTS idx_abandoned_carts_converted ON abandoned_carts(converted);
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_products_created ON products(created_at);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);

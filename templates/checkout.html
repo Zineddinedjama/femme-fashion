@@ -61,6 +61,35 @@
 </form>
 
 <script>
+var CART_ITEMS = [
+    {% for item in items %}
+    {name: {{ item.name|tojson }}, quantity: {{ item.qty }}, price: {{ item.price }}},
+    {% endfor %}
+];
+
+function saveCartDebounced() {
+    var payload = {
+        cart: CART_ITEMS,
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        wilaya: document.getElementById('wilaya_id').options[document.getElementById('wilaya_id').selectedIndex]?.text || '',
+        wilaya_id: parseInt(document.getElementById('wilaya_id').value) || 0,
+        commune: document.getElementById('commune').value,
+        delivery_type: document.querySelector('input[name="delivery_type"]:checked')?.value || 'domicile',
+        notes: document.getElementById('notes').value
+    };
+    fetch('/api/abandoned-cart/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+}
+var saveTimer;
+function onFormChange() { clearTimeout(saveTimer); saveTimer = setTimeout(saveCartDebounced, 2500); }
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.checkout-form input, .checkout-form select, .checkout-form textarea').forEach(function(el) {
+        el.addEventListener('input', onFormChange);
+        el.addEventListener('change', onFormChange);
+    });
+    saveCartDebounced();
+});
+
 const WILAYAS = [
     {% for wid, wname, d_price, b_price in wilayas %}
     {id: {{ wid }}, domicile: {{ d_price }}, bureau: {{ b_price }}},

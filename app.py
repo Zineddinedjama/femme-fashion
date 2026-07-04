@@ -1,8 +1,7 @@
-import os
-import json
-import re
+import os, json, re, hashlib
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from datetime import datetime, timedelta
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 
 from db import get_db, close_db, init_db, query, query_one, execute
 
@@ -133,9 +132,31 @@ def cart_items_and_total():
         total += item['price'] * item['qty']
     return items, total
 
+def track_visit(path, product_id=0):
+    session_id = session.get('session_id', '')
+    if not session_id:
+        return
+    ip_raw = request.remote_addr or ''
+    ip_hash = hashlib.sha256((ip_raw + 'fayzielegance_salt').encode()).hexdigest()[:16]
+    execute(
+        "INSERT INTO page_views (session_id, path, product_id, ip_hash, user_agent) VALUES (%s, %s, %s, %s, %s)",
+        (session_id, path, product_id, ip_hash, request.headers.get('User-Agent', '')[:200])
+    )
+
 @app.before_request
 def ensure_db():
     init_db()
+    if not session.get('session_id'):
+        session['session_id'] = hashlib.sha256(os.urandom(32)).hexdigest()[:24]
+    path = request.path
+    if '/product/' in path:
+        try:
+            pid = int(path.rsplit('/', 1)[-1])
+            track_visit(path, pid)
+        except:
+            track_visit(path)
+    elif path not in ('/static/', '/admin', '/admin/'):
+        track_visit(path)
     if query_one("SELECT COUNT(*) as c FROM products")['c'] == 0:
         from data.seed import seed
         seed()
@@ -284,6 +305,9 @@ def debug_product(product_id):
 def order_confirmed(order_id):
     order = query_one("SELECT * FROM orders WHERE id = %s", (order_id,))
     items = query("SELECT * FROM order_items WHERE order_id = %s", (order_id,))
+    session_id = session.get('session_id', '')
+    if session_id:
+        execute("UPDATE abandoned_carts SET converted = 1 WHERE session_id = %s", (session_id,))
     if not order:
         flash('Commande introuvable.', 'error')
         return redirect(url_for('index'))
@@ -311,7 +335,34 @@ def admin_dashboard():
     total_orders = query_one("SELECT COUNT(*) as c FROM orders")['c']
     pending_orders = query_one("SELECT COUNT(*) as c FROM orders WHERE status = 'pending'")['c']
     recent_orders = query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 5")
-    return render_template('admin/dashboard.html', total_products=total_products, total_orders=total_orders, pending_orders=pending_orders, recent_orders=recent_orders)
+    total_visitors = query_one("SELECT COUNT(DISTINCT session_id) as c FROM page_views")['c']
+    total_views = query_one("SELECT COUNT(*) as c FROM page_views")['c']
+    views_today = query_one("SELECT COUNT(*) as c FROM page_views WHERE created_at >= CURRENT_DATE")['c']
+    visitors_today = query_one("SELECT COUNT(DISTINCT session_id) as c FROM page_views WHERE created_at >= CURRENT_DATE")['c']
+    abandoned_carts_count = query_one("SELECT COUNT(*) as c FROM abandoned_carts WHERE converted = 0")['c']
+    total_orders_count = total_orders
+    conversion_rate = round((total_orders_count / max(total_visitors, 1)) * 100, 1)
+    top_products = query("""
+        SELECT p.name, COUNT(pv.id) as vues FROM page_views pv
+        JOIN products p ON p.id = pv.product_id
+        WHERE pv.product_id > 0 GROUP BY p.id, p.name
+        ORDER BY vues DESC LIMIT 5
+    """)
+    views_by_day = query("""
+        SELECT DATE(created_at) as jour, COUNT(*) as vues
+        FROM page_views WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
+        GROUP BY DATE(created_at) ORDER BY jour
+    """)
+    today_orders = query_one("SELECT COUNT(*) as c FROM orders WHERE DATE(created_at) = CURRENT_DATE")['c']
+    return render_template('admin/dashboard.html',
+        total_products=total_products, total_orders=total_orders,
+        pending_orders=pending_orders, recent_orders=recent_orders,
+        total_visitors=total_visitors, total_views=total_views,
+        views_today=views_today, visitors_today=visitors_today,
+        abandoned_carts_count=abandoned_carts_count,
+        conversion_rate=conversion_rate,
+        top_products=top_products, views_by_day=views_by_day,
+        today_orders=today_orders)
 
 @app.route('/admin/products')
 @login_required
@@ -401,6 +452,41 @@ def admin_order_status(order_id):
     execute("UPDATE orders SET status = %s WHERE id = %s", (status, order_id))
     flash('Statut mis à jour.', 'success')
     return redirect(url_for('admin_orders'))
+
+@app.route('/api/abandoned-cart/save', methods=['POST'])
+def abandoned_cart_save():
+    data = request.get_json()
+    session_id = session.get('session_id', '')
+    if not session_id or not data:
+        return jsonify({'ok': False})
+    existing = query_one("SELECT id FROM abandoned_carts WHERE session_id = %s AND converted = 0", (session_id,))
+    cart_json = json.dumps(data.get('cart', []))
+    if existing:
+        execute(
+            "UPDATE abandoned_carts SET customer_name=%s, customer_phone=%s, wilaya=%s, wilaya_id=%s, commune=%s, delivery_type=%s, notes=%s, cart_data=%s, updated_at=CURRENT_TIMESTAMP WHERE id=%s",
+            (data.get('name',''), data.get('phone',''), data.get('wilaya',''), data.get('wilaya_id',0), data.get('commune',''), data.get('delivery_type','domicile'), data.get('notes',''), cart_json, existing['id'])
+        )
+    else:
+        execute(
+            "INSERT INTO abandoned_carts (session_id, customer_name, customer_phone, wilaya, wilaya_id, commune, delivery_type, notes, cart_data) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            (session_id, data.get('name',''), data.get('phone',''), data.get('wilaya',''), data.get('wilaya_id',0), data.get('commune',''), data.get('delivery_type','domicile'), data.get('notes',''), cart_json)
+        )
+    return jsonify({'ok': True})
+
+@app.route('/admin/abandoned-carts')
+@login_required
+def admin_abandoned_carts():
+    carts = query("SELECT * FROM abandoned_carts ORDER BY updated_at DESC")
+    result = []
+    for c in carts:
+        items = json.loads(c['cart_data']) if isinstance(c['cart_data'], str) else c['cart_data']
+        result.append({**c, 'items': items})
+    return render_template('admin/abandoned_carts.html', carts=result)
+
+@app.route('/api/abandoned-cart/convert/<session_id>', methods=['POST'])
+def abandoned_cart_convert(session_id):
+    execute("UPDATE abandoned_carts SET converted = 1 WHERE session_id = %s", (session_id,))
+    return jsonify({'ok': True})
 
 if __name__ == '__main__':
     app.run(debug=True)

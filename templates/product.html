@@ -104,6 +104,12 @@
     </div>
 </div>
 <script>
+document.querySelector('.commande-form')?.addEventListener('submit', function() {
+    fetch('/api/abandoned-cart/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
+        cart: [{name: {{ product.name|tojson }}, quantity: parseInt(document.getElementById('quantity')?.value || 1), price: {{ product.price }}}]
+    }), keepalive: true});
+});
+
 var productImages = {{ images | tojson }};
 var currentIndex = 0;
 

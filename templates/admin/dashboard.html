@@ -2,6 +2,7 @@
 {% block title %}Tableau de bord{% endblock %}
 {% block content %}
 <h1>Tableau de bord</h1>
+
 <div class="stats">
     <div class="stat-card">
         <h3>{{ total_products }}</h3>
@@ -9,13 +10,59 @@
     </div>
     <div class="stat-card">
         <h3>{{ total_orders }}</h3>
-        <p>Commandes totales</p>
+        <p>Commandes</p>
     </div>
     <div class="stat-card">
         <h3>{{ pending_orders }}</h3>
         <p>En attente</p>
     </div>
+    <div class="stat-card">
+        <h3>{{ today_orders }}</h3>
+        <p>Aujourd'hui</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ total_visitors }}</h3>
+        <p>Visiteurs</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ views_today }}</h3>
+        <p>Vues aujourd'hui</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ conversion_rate }}%</h3>
+        <p>Conversion</p>
+    </div>
+    <div class="stat-card" style="cursor:pointer" onclick="window.location='/admin/abandoned-carts'">
+        <h3>{{ abandoned_carts_count }}</h3>
+        <p>Paniers abandonn&eacute;s &rarr;</p>
+    </div>
 </div>
+
+{% if views_by_day %}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:25px 0">
+    <div class="stat-card" style="padding:20px">
+        <h3 style="font-size:1rem;margin-bottom:15px;color:#555">&Eacute;volution des visites (7 jours)</h3>
+        <canvas id="chartVisits" height="200"></canvas>
+    </div>
+    <div class="stat-card" style="padding:20px">
+        <h3 style="font-size:1rem;margin-bottom:15px;color:#555">Top 5 produits consult&eacute;s</h3>
+        <canvas id="chartProducts" height="200"></canvas>
+    </div>
+</div>
+{% endif %}
+
+{% if top_products %}
+<div class="stat-card" style="padding:20px;margin-bottom:25px">
+    <h3 style="font-size:1rem;margin-bottom:10px;color:#555">Produits les plus consult&eacute;s</h3>
+    <table class="admin-table">
+        <tr><th>#</th><th>Produit</th><th>Vues</th></tr>
+        {% for p in top_products %}
+        <tr><td>{{ loop.index }}</td><td>{{ p.name }}</td><td>{{ p.vues }}</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
 <h2>Derni&egrave;res commandes</h2>
 <table class="admin-table">
     <tr><th>#</th><th>Client</th><th>Total</th><th>Statut</th><th>Date</th></tr>
@@ -31,4 +78,32 @@
     <tr><td colspan="5">Aucune commande r&eacute;cente.</td></tr>
     {% endfor %}
 </table>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+{% if views_by_day %}
+var jours = {{ views_by_day | map(attribute='jour') | list | tojson }};
+var vues = {{ views_by_day | map(attribute='vues') | list }};
+new Chart(document.getElementById('chartVisits'), {
+    type: 'line',
+    data: {
+        labels: jours.map(function(j) { return j.slice(5); }),
+        datasets: [{ label: 'Vues', data: vues, borderColor: '#be185d', backgroundColor: 'rgba(190,24,93,0.1)', fill: true, tension: 0.3 }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+});
+{% endif %}
+{% if top_products %}
+var noms = {{ top_products | map(attribute='name') | list | tojson }};
+var vuesP = {{ top_products | map(attribute='vues') | list }};
+new Chart(document.getElementById('chartProducts'), {
+    type: 'bar',
+    data: {
+        labels: noms,
+        datasets: [{ label: 'Vues', data: vuesP, backgroundColor: 'rgba(201,164,74,0.7)', borderColor: '#c9a44a', borderWidth: 1 }]
+    },
+    options: { responsive: true, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+});
+{% endif %}
+</script>
 {% endblock %}

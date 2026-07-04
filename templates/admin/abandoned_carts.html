@@ -1,0 +1,49 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Paniers abandonnés{% endblock %}
+{% block content %}
+<h1>Paniers abandonnés ({{ carts|length }})</h1>
+{% if carts %}
+<table class="admin-table">
+    <tr>
+        <th>#</th><th>Client</th><th>Téléphone</th><th>Wilaya</th><th>Commune</th>
+        <th>Produits</th><th>Total</th><th>Dernière activité</th><th>Converti</th>
+    </tr>
+    {% for c in carts %}
+    <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ c.customer_name or '—' }}</td>
+        <td>{{ c.customer_phone or '—' }}</td>
+        <td>{{ c.wilaya or '—' }}</td>
+        <td>{{ c.commune or '—' }}</td>
+        <td>
+            {% if c.items %}
+                {% for item in c.items %}
+                    {{ item.name }}{% if item.quantity %} x{{ item.quantity }}{% endif %}{% if not loop.last %}<br>{% endif %}
+                {% endfor %}
+            {% else %}—{% endif %}
+        </td>
+        <td>
+            {% set total = {'sum': 0} %}
+            {% if c.items %}
+                {% for item in c.items %}
+                    {% set _ = total.update({'sum': total.sum + (item.price|float * item.quantity|int if item.quantity else item.price|float)}) %}
+                {% endfor %}
+            {% endif %}
+            {{ "%.2f"|format(total.sum) }} DA
+        </td>
+        <td>{{ c.updated_at[:16] if c.updated_at else c.created_at[:16] }}</td>
+        <td>
+            {% if c.converted %}
+                <span style="color:#16a34a">Oui</span>
+            {% else %}
+                <span style="color:#dc2626">Non</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p style="color:#888;padding:20px">Aucun panier abandonné pour le moment.</p>
+{% endif %}
+<a href="/admin" class="btn btn-secondary" style="display:inline-block;margin-top:20px">&larr; Retour au tableau de bord</a>
+{% endblock %}
