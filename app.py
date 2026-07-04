@@ -31,12 +31,13 @@ def get_images(product):
     if isinstance(raw, list):
         return raw
     raw = raw.strip()
-    if raw.startswith('[') and raw.endswith(']'):
-        try:
-            return json.loads(raw)
-        except (json.JSONDecodeError, TypeError):
-            import re
-            return re.findall(r'https?://[^\s,"\']+', raw)
+    if raw.startswith('['):
+        urls = []
+        for part in raw[1:-1].split(','):
+            part = part.strip().strip('"').strip("'")
+            if part and part.startswith('http'):
+                urls.append(part)
+        return urls
     return [raw]
 
 def get_first_image(product):
