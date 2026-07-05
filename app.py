@@ -497,18 +497,25 @@ def abandoned_cart_save():
 @app.route('/admin/abandoned-carts')
 @login_required
 def admin_abandoned_carts():
-    rows = query("SELECT * FROM abandoned_carts ORDER BY updated_at DESC")
-    carts = []
-    for c in rows:
-        items = json.loads(c['cart_data']) if isinstance(c['cart_data'], str) else c['cart_data']
-        total = sum((item.get('price', 0) or 0) * (item.get('quantity', 1) or 1) for item in items)
-        carts.append({
-            **c,
-            'items': items,
-            'total_cart': total,
-            'updated_at_str': str(c['updated_at'])[:16] if c.get('updated_at') else '',
-            'created_at_str': str(c['created_at'])[:16] if c.get('created_at') else '',
-        })
+    try:
+        rows = query("SELECT * FROM abandoned_carts ORDER BY updated_at DESC")
+        carts = []
+        for c in rows:
+            raw = c.get('cart_data')
+            if isinstance(raw, str) and raw:
+                items = json.loads(raw)
+            else:
+                items = []
+            total = sum((item.get('price', 0) or 0) * (item.get('quantity', 1) or 1) for item in items)
+            carts.append({
+                **c,
+                'items': items,
+                'total_cart': total,
+                'updated_at_str': str(c['updated_at'])[:16] if c.get('updated_at') else '',
+                'created_at_str': str(c['created_at'])[:16] if c.get('created_at') else '',
+            })
+    except:
+        carts = []
     return render_template('admin/abandoned_carts.html', carts=carts)
 
 @app.route('/api/abandoned-cart/convert/<session_id>', methods=['POST'])
