@@ -351,8 +351,8 @@ def admin_dashboard():
             recent_orders.append(d)
         total_visitors = query_one("SELECT COUNT(DISTINCT session_id) as c FROM page_views")['c']
         total_views = query_one("SELECT COUNT(*) as c FROM page_views")['c']
-        views_today = query_one("SELECT COUNT(*) as c FROM page_views WHERE created_at >= CURRENT_DATE")['c']
-        visitors_today = query_one("SELECT COUNT(DISTINCT session_id) as c FROM page_views WHERE created_at >= CURRENT_DATE")['c']
+    views_today = query_one("SELECT COUNT(*) as c FROM page_views WHERE created_at >= NOW() - INTERVAL '24 hours'")['c']
+    visitors_today = query_one("SELECT COUNT(DISTINCT session_id) as c FROM page_views WHERE created_at >= NOW() - INTERVAL '24 hours'")['c']
         abandoned_carts_count = query_one("SELECT COUNT(*) as c FROM abandoned_carts WHERE converted = 0")['c']
         conversion_rate = round((total_orders / max(total_visitors, 1)) * 100, 1)
         raw_top = query("""
@@ -369,7 +369,7 @@ def admin_dashboard():
         """)
         views_by_day = [str(r['jour']) for r in raw_days]
         views_by_day_counts = [r['vues'] for r in raw_days]
-        today_orders = query_one("SELECT COUNT(*) as c FROM orders WHERE DATE(created_at) = CURRENT_DATE")['c']
+        today_orders = query_one("SELECT COUNT(*) as c FROM orders WHERE created_at >= NOW() - INTERVAL '24 hours'")['c']
     except:
         total_products = total_orders = pending_orders = 0
         total_visitors = total_views = views_today = visitors_today = 0
