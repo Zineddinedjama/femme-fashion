@@ -514,7 +514,9 @@ def admin_abandoned_carts():
                 'updated_at_str': str(c['updated_at'])[:16] if c.get('updated_at') else '',
                 'created_at_str': str(c['created_at'])[:16] if c.get('created_at') else '',
             })
-    except:
+    except Exception as e:
+        import traceback
+        print("ABANDONED_CARTS ERROR:", e, traceback.format_exc(), flush=True)
         carts = []
     return render_template('admin/abandoned_carts.html', carts=carts)
 
