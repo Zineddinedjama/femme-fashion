@@ -351,8 +351,8 @@ def admin_dashboard():
             recent_orders.append(d)
         total_visitors = query_one("SELECT COUNT(DISTINCT session_id) as c FROM page_views")['c']
         total_views = query_one("SELECT COUNT(*) as c FROM page_views")['c']
-    views_today = query_one("SELECT COUNT(*) as c FROM page_views WHERE created_at >= NOW() - INTERVAL '24 hours'")['c']
-    visitors_today = query_one("SELECT COUNT(DISTINCT session_id) as c FROM page_views WHERE created_at >= NOW() - INTERVAL '24 hours'")['c']
+        views_today = query_one("SELECT COUNT(*) as c FROM page_views WHERE created_at >= NOW() - INTERVAL '24 hours'")['c']
+        visitors_today = query_one("SELECT COUNT(DISTINCT session_id) as c FROM page_views WHERE created_at >= NOW() - INTERVAL '24 hours'")['c']
         abandoned_carts_count = query_one("SELECT COUNT(*) as c FROM abandoned_carts WHERE converted = 0")['c']
         conversion_rate = round((total_orders / max(total_visitors, 1)) * 100, 1)
         raw_top = query("""
