@@ -509,14 +509,12 @@ def admin_abandoned_carts():
             total = sum((item.get('price', 0) or 0) * (item.get('quantity', 1) or 1) for item in items)
             carts.append({
                 **c,
-                'items': items,
+                'cart_items': items,
                 'total_cart': total,
                 'updated_at_str': str(c['updated_at'])[:16] if c.get('updated_at') else '',
                 'created_at_str': str(c['created_at'])[:16] if c.get('created_at') else '',
             })
-    except Exception as e:
-        import traceback
-        print("ABANDONED_CARTS ERROR:", e, traceback.format_exc(), flush=True)
+    except:
         carts = []
     return render_template('admin/abandoned_carts.html', carts=carts)
 

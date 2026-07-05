@@ -16,8 +16,8 @@
         <td>{{ c.wilaya or '—' }}</td>
         <td>{{ c.commune or '—' }}</td>
         <td>
-            {% if c.items %}
-                {% for item in c.items %}
+            {% if c.cart_items %}
+                {% for item in c.cart_items %}
                     {{ item.name }}{% if item.quantity %} x{{ item.quantity }}{% endif %}{% if not loop.last %}<br>{% endif %}
                 {% endfor %}
             {% else %}—{% endif %}
