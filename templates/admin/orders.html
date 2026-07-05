@@ -24,7 +24,7 @@
         <td>{{ "%.0f"|format(order.delivery_price or 0) }} DA</td>
         <td>{{ "%.2f"|format(order.total_amount or 0) }} DA</td>
         <td><span class="status {{ order.status }}">{{ order.status }}</span></td>
-        <td>{{ order.created_at[:10] }}</td>
+        <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
         <td>
             <form action="{{ url_for('admin_order_status', order_id=order.id) }}" method="post">
                 <select name="status">
