@@ -187,3 +187,11 @@ footer { background: #be185d; border-top: 2px solid #c9a44a; text-align: center;
     .header-inner { flex-direction: column; gap: 10px; }
     nav a { margin: 0 8px; }
 }
+@media (max-width: 480px) {
+    .product-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .product-card img { height: 180px; }
+    .product-card { padding: 10px; }
+    .product-card h3 { font-size: 0.85rem; }
+    .card-description { font-size: 0.75rem; }
+    .price { font-size: 0.95rem; }
+}
