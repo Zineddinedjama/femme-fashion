@@ -14,7 +14,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
 app.config['ADMIN_PASSWORD'] = os.environ.get('ADMIN_PASSWORD', 'admin123')
 app.config['WHATSAPP_NUMBER'] = os.environ.get('WHATSAPP_NUMBER', '213659391939')
-app.config['FB_PIXEL_ID'] = os.environ.get('FB_PIXEL_ID', 'VOTRE_ID_ICI')
+app.config['FB_PIXEL_ID'] = os.environ.get('FB_PIXEL_ID', '758922029295860')
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 86400
 
