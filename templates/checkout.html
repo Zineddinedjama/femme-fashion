@@ -131,7 +131,7 @@ fbq('track', 'InitiateCheckout', {
     currency: 'DZD',
     content_type: 'product',
     content_ids: {{ items|map(attribute='product_id')|list|tojson }},
-    num_items: {{ items|sum(attribute='quantity')|tojson }}
+    num_items: {{ items|sum(attribute='qty')|tojson }}
 });
 </script>
 {% endif %}
