@@ -172,7 +172,8 @@ def ensure_db():
 @app.route('/')
 def index():
     products = query("SELECT * FROM products ORDER BY created_at DESC LIMIT 8")
-    return render_template('index.html', products=products)
+    best_sellers = query("SELECT * FROM products ORDER BY RANDOM() LIMIT 6")
+    return render_template('index.html', products=products, best_sellers=best_sellers)
 
 @app.route('/products')
 def products():

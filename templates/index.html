@@ -7,29 +7,107 @@
     <a href="{{ url_for('products') }}" class="btn">Voir tous les produits</a>
 </section>
 
+<section class="best-sellers">
+    <div class="section-header">
+        <h2>Best sellers</h2>
+        <a href="{{ url_for('products') }}" class="btn btn-outline btn-sm">Voir tout</a>
+    </div>
+    <div class="carousel-wrapper">
+        <button class="carousel-btn carousel-prev" onclick="moveCarousel(-1)">&#10094;</button>
+        <div class="carousel-track" id="bestSellersCarousel">
+            {% for product in best_sellers %}
+            {% set images = get_images(product) %}
+            <div class="carousel-slide">
+                <a href="{{ url_for('product_detail', product_id=product.id) }}">
+                    <div class="carousel-img">
+                        <img src="{{ images[0] or 'https://picsum.photos/seed/default/300/400' }}" alt="{{ product.name }}" loading="lazy">
+                    </div>
+                    <h3>{{ product.name }}</h3>
+                    <p class="price">{{ "%.2f"|format(product.price) }} DA</p>
+                </a>
+                <form action="{{ url_for('cart_add') }}" method="post">
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="btn btn-sm">Ajouter au panier</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        <button class="carousel-btn carousel-next" onclick="moveCarousel(1)">&#10095;</button>
+    </div>
+</section>
+
 <section class="featured">
-    <h2>Produits R&eacute;cents</h2>
+    <div class="section-header">
+        <h2>Produits R&eacute;cents</h2>
+        <a href="{{ url_for('products') }}" class="btn btn-outline btn-sm">Voir tout</a>
+    </div>
     <div class="product-grid">
         {% for product in products %}
+        {% set images = get_images(product) %}
         <div class="product-card">
             <a href="{{ url_for('product_detail', product_id=product.id) }}">
                 <div class="product-card-img">
-                    <img src="{{ get_first_image(product) or 'https://picsum.photos/seed/default/300/400' }}" alt="{{ product.name }}" loading="lazy">
+                    <img src="{{ images[0] or 'https://picsum.photos/seed/default/300/400' }}" alt="{{ product.name }}" loading="lazy">
                     {% if product.video_url %}<span class="video-badge">&#9654; Video</span>{% endif %}
                 </div>
                 <h3>{{ product.name }}</h3>
                 <p class="price">{{ "%.2f"|format(product.price) }} DA</p>
-                {% if product.description %}
-                <p class="card-description">{{ product.description[:120] }}{% if product.description|length > 120 %}...{% endif %}</p>
-                {% endif %}
             </a>
             <form action="{{ url_for('cart_add') }}" method="post">
                 <input type="hidden" name="product_id" value="{{ product.id }}">
                 <input type="hidden" name="quantity" value="1">
-                <button type="submit" class="btn btn-sm">Ajouter au panier</button>
+                <button type="submit" class="btn btn-sm btn-add-cart">Ajouter au panier</button>
             </form>
         </div>
         {% endfor %}
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    var track = document.getElementById('bestSellersCarousel');
+    if (!track) return;
+    var slides = track.querySelectorAll('.carousel-slide');
+    if (slides.length < 2) return;
+
+    function getSlideWidth() {
+        var gap = parseInt(getComputedStyle(track).gap) || 20;
+        return slides[0].offsetWidth + gap;
+    }
+
+    function getMaxScroll() {
+        return track.scrollWidth - track.clientWidth;
+    }
+
+    function scrollNext() {
+        var sw = getSlideWidth();
+        var maxScroll = getMaxScroll();
+        if (track.scrollLeft + sw >= maxScroll - 5) {
+            track.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+            track.scrollBy({ left: sw, behavior: 'smooth' });
+        }
+    }
+
+    var interval = setInterval(scrollNext, 4000);
+
+    track.addEventListener('mouseenter', function() { clearInterval(interval); });
+    track.addEventListener('mouseleave', function() {
+        interval = setInterval(scrollNext, 4000);
+    });
+})();
+
+function moveCarousel(dir) {
+    var track = document.getElementById('bestSellersCarousel');
+    if (!track) return;
+    var slides = track.querySelectorAll('.carousel-slide');
+    if (!slides.length) return;
+    var gap = parseInt(getComputedStyle(track).gap) || 20;
+    var sw = slides[0].offsetWidth + gap;
+    track.scrollBy({ left: dir * sw, behavior: 'smooth' });
+}
+</script>
 {% endblock %}

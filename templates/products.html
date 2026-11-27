@@ -12,22 +12,20 @@
 
 <div class="product-grid">
     {% for product in products %}
+    {% set images = get_images(product) %}
     <div class="product-card">
         <a href="{{ url_for('product_detail', product_id=product.id) }}">
             <div class="product-card-img">
-                <img src="{{ get_first_image(product) or 'https://picsum.photos/seed/default/300/400' }}" alt="{{ product.name }}" loading="lazy">
+                <img src="{{ images[0] or 'https://picsum.photos/seed/default/300/400' }}" alt="{{ product.name }}" loading="lazy">
                 {% if product.video_url %}<span class="video-badge">&#9654; Video</span>{% endif %}
             </div>
             <h3>{{ product.name }}</h3>
             <p class="price">{{ "%.2f"|format(product.price) }} DA</p>
-            {% if product.description %}
-            <p class="card-description">{{ product.description[:120] }}{% if product.description|length > 120 %}...{% endif %}</p>
-            {% endif %}
         </a>
         <form action="{{ url_for('cart_add') }}" method="post">
             <input type="hidden" name="product_id" value="{{ product.id }}">
             <input type="hidden" name="quantity" value="1">
-            <button type="submit" class="btn btn-sm">Ajouter au panier</button>
+            <button type="submit" class="btn btn-sm btn-add-cart">Ajouter au panier</button>
         </form>
     </div>
     {% else %}
