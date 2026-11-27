@@ -123,3 +123,16 @@ document.getElementById('wilaya_id').addEventListener('change', updateDeliveryPr
 document.addEventListener('DOMContentLoaded', updateDeliveryPrice);
 </script>
 {% endblock %}
+{% block extra_js %}
+{% if fb_pixel_id %}
+<script>
+fbq('track', 'InitiateCheckout', {
+    value: {{ subtotal|float|round(2)|tojson }},
+    currency: 'DZD',
+    content_type: 'product',
+    content_ids: {{ items|map(attribute='product_id')|list|tojson }},
+    num_items: {{ items|sum(attribute='quantity')|tojson }}
+});
+</script>
+{% endif %}
+{% endblock %}

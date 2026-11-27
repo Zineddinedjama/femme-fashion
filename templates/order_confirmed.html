@@ -32,3 +32,17 @@
     <a href="{{ url_for('index') }}" class="btn">Retour &agrave; l'accueil</a>
 </div>
 {% endblock %}
+{% block extra_js %}
+{% if fb_pixel_id and order %}
+<script>
+fbq('track', 'Purchase', {
+    value: {{ order.total_amount|float|round(2)|tojson }},
+    currency: 'DZD',
+    content_type: 'product',
+    content_ids: {{ items|map(attribute='product_id')|list|tojson }},
+    num_items: {{ items|sum(attribute='quantity')|tojson }},
+    order_id: {{ order.id|tojson }}
+});
+</script>
+{% endif %}
+{% endblock %}
